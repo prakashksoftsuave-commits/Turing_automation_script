@@ -11,44 +11,72 @@ import java.util.function.BooleanSupplier;
 
 public class Waiter {
 
+    private static final Duration TIMEOUT = Duration.ofSeconds(30);
 
-    public static void click(By locator) {
-        WebDriver driver = DriverFactory.getDriver();
-
-        int attempts = 0;
-        while (attempts < 3) {
-            try {
-                Waiter.waitForElementToBeClickable(locator);
-                WebElement element = driver.findElement(locator);
-                click(element);
-                return;
-            } catch (StaleElementReferenceException e) {
-                attempts++;
-                if (attempts == 3) {
-                    throw e;
-                }
-            }
+    public static void waitForSeconds(int seconds) {
+        try {
+            Thread.sleep(seconds * 1000L); // Convert seconds to milliseconds
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt(); // Good practice to reset the interruption status
+            throw new RuntimeException("Thread was interrupted while waiting", e);
         }
     }
 
-    public static void click(WebElement element){
-        Waiter.waitForElementToBeClickable((By) element);
-        element.click();
+    public static void waitForElementToBeVisible(By locator) {
+        WebDriverWait wait = new WebDriverWait(DriverFactory.getDriver(), TIMEOUT);
+        wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
     }
 
-    public static void forceClick(By locator) {
-        WebElement element = DriverFactory.getDriver().findElement(locator);
-        ((JavascriptExecutor) DriverFactory.getDriver()).executeScript("arguments[0].click();", element);
+    public static void waitForElementToBeInvisible(By locator) {
+        WebDriverWait wait = new WebDriverWait(DriverFactory.getDriver(), TIMEOUT);
+        wait.until(ExpectedConditions.invisibilityOfElementLocated(locator));
     }
 
-    public static void launchUrl(String url) {
-        DriverFactory.getDriver().get(url);
+    public static void waitForElementToBeClickable(By locator) {
+        WebDriverWait wait = new WebDriverWait(DriverFactory.getDriver(), TIMEOUT);
+        wait.until(ExpectedConditions.elementToBeClickable(locator));
     }
 
-    public static void type(By locator, String text) {
-        Waiter.waitForPresenceOfElement(locator);
+    public static void waitForElementToBeNotClickable(By locator) {
         WebDriver driver = DriverFactory.getDriver();
-        driver.findElement(locator).clear();
-        driver.findElement(locator).sendKeys(text);
+        WebDriverWait wait = new WebDriverWait(driver, TIMEOUT);
+        wait.until(driver1 -> {
+            try {
+                WebElement element = driver1.findElement(locator);
+                return !element.isEnabled() || !element.isDisplayed();
+            } catch (NoSuchElementException | StaleElementReferenceException e) {
+                return true;
+            }
+        });
     }
+
+    public static void waitUntil(BooleanSupplier condition, int timeoutSeconds) {
+        WebDriver driver = DriverFactory.getDriver();
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(timeoutSeconds));
+        wait.until(d -> condition.getAsBoolean());
+    }
+
+    public static void waitForFileToExist(String filePath, long timeout) {
+        File file = new File(filePath);
+        long startTime = System.currentTimeMillis();
+
+        while (!file.exists() && (System.currentTimeMillis() - startTime) < timeout) {
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
+
+        if (!file.exists()) {
+            throw new RuntimeException("Timeout waiting for file: " + filePath);
+        }
+    }
+
+    public static void waitForPresenceOfElement(By locator) {
+        WebDriverWait wait = new WebDriverWait(DriverFactory.getDriver(), TIMEOUT);
+        wait.until(ExpectedConditions.presenceOfElementLocated(locator));
+    }
+
+
 }

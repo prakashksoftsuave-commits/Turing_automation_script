@@ -5,6 +5,7 @@ import org.openqa.selenium.*;
 
 public class Actions {
 
+
     public static void click(By locator) {
         WebDriver driver = DriverFactory.getDriver();
 
