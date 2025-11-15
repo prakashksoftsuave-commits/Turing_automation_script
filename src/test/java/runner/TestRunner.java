@@ -18,7 +18,7 @@ import com.framework.ResultAttachment.Zipper;
                 "com.aventstack.extentreports.cucumber.adapter.ExtentCucumberAdapter:"
         }
         ,
-        tags ="@EndToEnd-28"
+        tags ="@GetRepoData-01"
 )
 
 public class TestRunner extends AbstractTestNGCucumberTests {

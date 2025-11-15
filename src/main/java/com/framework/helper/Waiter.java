@@ -11,7 +11,7 @@ import java.util.function.BooleanSupplier;
 
 public class Waiter {
 
-    private static final Duration TIMEOUT = Duration.ofSeconds(30);
+    private static final Duration TIMEOUT = Duration.ofSeconds(10);
 
     public static void waitForSeconds(int seconds) {
         try {
